@@ -1,0 +1,97 @@
+{% extends 'lms.html' %}
+{% block content %}
+
+    {% if table_name %}
+        <p>
+        <h2 class="display-6">{{ table_name }}</h2>
+        <button type="button" class="btn btn-dark mt-3" data-toggle="modal" data-target="#addEntryModal">
+            +
+        </button>
+        </p>
+    {% endif %}
+
+    {% if data %}
+        <table class="table table-hover">
+        <thead>
+            <tr>
+                {% for column in columns %}
+                    <th scope="col">{{ column }}</th>
+                {% endfor %}
+                <th scope="col">Actions</th> <!-- Add a new column for actions -->
+            </tr>
+        </thead>
+        <tbody class="table-group-divider">
+            {% for row in data %}
+                <tr>
+                    {% for value in row %}
+                        <td>{{ value }}</td>
+                    {% endfor %}
+                    <td>
+                        <form method="post" action="{{ url_for('delete_row', table_name=table_name, column_name=columns[0], column_value=row[0]) }}">
+                            <input type="submit" value="Delete" class="btn btn-danger">
+                        </form>
+                        <button type="button" class="btn btn-primary mt-1" data-toggle="modal" data-target="#editModal{{ loop.index0 }}">
+                            Edit
+                        </button>
+
+                        <!-- Edit Modal -->
+                        <div class="modal" id="editModal{{ loop.index0 }}" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="editModalLabel">Edit {{ table_name }} Record</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form method="post" action="{{ url_for('update_row', table_name=table_name, row_id=row[0]) }}">
+                                            {% for i in range(row|length) %}
+                                                <div class="form-group">
+                                                    <label for="{{ columns[i] }}">{{ columns[i] }}:</label>
+                                                    <input type="text" class="form-control" id="{{ columns[i] }}" name="{{ columns[i] }}" value="{{ row[i] }}">
+                                                </div>
+                                            {% endfor %}
+                                            <button type="submit" class="btn btn-primary">Update</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        </table>
+    {% else %}
+        <h2 class="display-6">No Data</h2>
+    {% endif %}
+
+    <!-- Add Entry Modal -->
+    <div class="modal" id="addEntryModal" role="dialog" aria-labelledby="addEntryModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addEntryModalLabel">Add New {{ table_name }} Entry</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <form method="post" action="{{ url_for('add_entry', table_name=table_name, columns=columns) }}">
+                        {% for column in columns %}
+                            <div class="form-group">
+                                <label for="{{ column }}">{{ column }}:</label>
+                                <input type="text" class="form-control" id="{{ column }}" name="{{ column }}" value="">
+                            </div>
+                        {% endfor %}
+                        <button type="submit" class="btn btn-primary">Add</button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
